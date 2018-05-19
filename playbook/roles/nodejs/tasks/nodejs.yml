@@ -1,0 +1,8 @@
+---
+- name: "nodejs {{ nodejs.version }} をインストール"
+  shell: /bin/bash -lc "nvm install {{ nodejs.version }}"
+  become: yes
+
+- name: "nodejs デフォルトバージョンを設定"
+  shell: /bin/bash -lc "nvm alias default node"
+  become: yes

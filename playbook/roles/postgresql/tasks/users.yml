@@ -1,0 +1,17 @@
+---
+- name: "{{ postgresql_service_name }} サービスが稼働中かどうか確認"
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: started
+
+- name: "ユーザーが存在するか確認・作成"
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.pass | default('pass') }}"
+    encrypted: "{{ item.encrypted | default(omit) }}"
+    state: present
+    login_user: "{{ postgresql_admin_user }}"
+  become: yes
+  become_user: "{{ postgresql_admin_user }}"
+  with_items: "{{ postgresql_users }}"
+  when: postgresql_users|length > 0

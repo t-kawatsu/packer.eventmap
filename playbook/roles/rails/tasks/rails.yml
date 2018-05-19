@@ -1,0 +1,15 @@
+---
+- name: 依存パッケージをインストール
+  yum: state=present name={{ item }}
+  with_items:
+    - gcc-c++
+    - glibc-headers
+    - patch
+    - make
+    - bzip2
+    - autoconf
+    - automake
+    - libtool
+    - bison
+    - curl
+  become: yes

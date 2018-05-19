@@ -1,0 +1,19 @@
+---
+- name: "PostgreSQLサービスが稼働中かどうか確認"
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: started
+
+- name: "データベースが存在するかどうか確認・作成"
+  postgresql_db:
+    name: "{{ item.name }}"
+    encoding: "{{ postgresql_encoding }}"
+    lc_collate: "{{ postgresql_locale }}"
+    lc_ctype: "{{ postgresql_locale }}"
+    template: "template0"
+    state: present
+    login_user: "{{ postgresql_admin_user }}"
+  become: yes
+  become_user: "{{ postgresql_admin_user }}"
+  with_items: "{{ postgresql_databases }}"
+  when: postgresql_databases|length > 0

@@ -1,0 +1,5 @@
+---
+- name: パッケージを最新に更新
+  yum: name=* state=latest exclude="kernel* centos*"
+  become: yes
+  tags: [os-setup]

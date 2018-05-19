@@ -1,0 +1,34 @@
+---
+#
+# Install PostgreSQL
+#
+- name: PostgreSQLリポジトリの追加
+  yum:
+    name: "{{ postgresql_yum_repository_url }}"
+    state: present
+
+- name: 依存をインストール
+  yum:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items: ["python-psycopg2", "python-pycurl", "glibc-common"]
+
+- name: "インストール {{ postgresql_version_terse }}"
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "postgresql{{ postgresql_version_terse }}-server"
+    - "postgresql{{ postgresql_version_terse }}-devel"
+    - "postgresql{{ postgresql_version_terse }}"
+
+- name: パスを通す
+  template: >
+    src=etc/profile.d/postgresql.sh.j2
+    dest=/etc/profile.d/postgresql.sh.sh
+    owner=root
+    group=root
+    mode=0755
+  become: yes
+

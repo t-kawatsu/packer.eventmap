@@ -1,0 +1,6 @@
+---
+- import_tasks: rails.yml
+  tags: [rails]
+
+- import_tasks: project.yml
+  tags: [app]

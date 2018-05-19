@@ -1,0 +1,71 @@
+---
+#
+# Configure PostgreSQL
+#
+- name: "データディレクトリの確認・作成 {{ postgresql_data_directory }}"
+  file:
+    path: "{{ postgresql_data_directory }}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    state: directory
+    mode: 0700
+  register: pgdata_dir_exist
+
+- name: Ensure the locale is generated
+  become: yes
+  command: >
+    localedef -c -i {{ postgresql_locale_parts[0] }} -f {{ postgresql_locale_parts[1] }}
+    {{ postgresql_locale }}
+  changed_when: false
+
+- name: "データディレクトリが初期化されているか確認"
+  stat:
+    path: "{{ postgresql_data_directory }}/PG_VERSION"
+  register: pgdata_dir_initialized
+  when: not postgresql_cluster_reset
+
+- name: "データベース初期化 | RedHat"
+  command: >
+    {{ postgresql_bin_directory }}/initdb -D {{ postgresql_data_directory }}
+    --locale={{ postgresql_locale }} --encoding={{ postgresql_encoding }}
+  become: yes
+  become_user: "{{ postgresql_service_user }}"
+  when: (postgresql_cluster_reset or
+         pgdata_dir_exist.changed or
+         not pgdata_dir_initialized.stat.exists)
+
+- name: "設定ディレクトリの確認・作成 {{ postgresql_conf_directory }}"
+  file:
+    path: "{{ postgresql_conf_directory }}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+ #   mode: 0750
+    mode: 0700
+    state: directory
+
+- name: "設定ファイル更新 - pg_hba.conf"
+  template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_conf_directory }}/pg_hba.conf"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    mode: 0640
+  register: postgresql_configuration_pt1
+
+- name: "設定ファイル更新 - postgresql.conf"
+  template:
+    src: "postgresql.conf-{{ postgresql_version }}.j2"
+    # if using pgtune, save the template to ".untuned"
+    dest: "{{postgresql_conf_directory}}/postgresql.conf{% if postgresql_pgtune %}.untuned{% endif %}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    mode: 0640
+  register: postgresql_configuration_pt2
+
+- name: "再起動 {{ postgresql_service_name }}"
+  service:
+    name: "{{ postgresql_service_name }}"
+    state: restarted
+  when: postgresql_configuration_pt1.changed or postgresql_configuration_pt2.changed
+
+

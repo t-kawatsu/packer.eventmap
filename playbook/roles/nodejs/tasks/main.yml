@@ -1,0 +1,9 @@
+---
+- import_tasks: nvm.yml
+  tags: [nvm]
+
+- import_tasks: nodejs.yml
+  tags: [nodejs]
+
+- import_tasks: yarn.yml
+  tags: [yarn]

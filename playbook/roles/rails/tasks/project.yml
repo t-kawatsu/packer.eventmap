@@ -1,0 +1,6 @@
+---
+- name: プロジェクトの root ディレクトリを作成
+  file: path={{ app.parent_dir }} state=directory
+        owner=root group={{ rbenv.group }} mode=0770
+  become: yes
+

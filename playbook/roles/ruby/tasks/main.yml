@@ -1,0 +1,9 @@
+---
+- import_tasks: rbenv.yml
+  tags: [rbenv]
+
+- import_tasks: ruby.yml
+  tags: [ruby]
+
+- import_tasks: bundler.yml
+  tags: [bundler]

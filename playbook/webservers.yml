@@ -1,0 +1,12 @@
+---
+- hosts: webservers
+  roles:
+    - common
+    - ruby
+    - nodejs
+    - rails
+  tasks:
+    - include_role:
+        name: postgresql
+        tasks_from: install
+

@@ -1,0 +1,50 @@
+---
+- name: "rbenv {{ rbenv.group }} グループが存在するか確認"
+  group: name={{ rbenv.group }} state=present gid={{ rbenv.gid }}
+  become: yes
+
+- name: gitのインストール
+  yum: state=present name={{ item }}
+  with_items:
+    - git
+  become: yes
+
+- name: "rbenv リポジトリのチェックアウト {{ rbenv.repo }}"
+  git: repo={{ rbenv.repo }}
+       dest={{ rbenv.root }}
+       version={{ rbenv.version }}
+       accept_hostkey=yes
+       force=yes
+  become: yes
+
+- name: "rbenv プラグインディレクトリの作成 {{ rbenv.root }}/plugins"
+  file: state=directory path={{ rbenv.root }}/plugins
+  become: yes
+
+- name: "rbenv shimsディレクトリの作成 {{ rbenv.root }}/shims"
+  file: state=directory path={{ rbenv.root }}/shims
+  become: yes
+
+- name: rbenv プラグインのインストール
+  git: repo={{ item.repo }}
+       dest={{ rbenv.root }}/plugins/{{ item.name }}
+       version={{ item.version }}
+       accept_hostkey=yes
+       force=yes
+  with_items: "{{ rbenv_plugins }}"
+  become: yes
+
+- name: rbenv ディレクトリのグループ、モードを変更
+  file: path={{ rbenv.root }}
+        owner=root
+        group={{ rbenv.group }}
+        mode="u=rwx,g=rwx,o=rx"
+        recurse=yes
+  become: yes
+
+- name: rbenv add initialization to profile system-wide
+  copy: src=etc/profile.d/rbenv.sh
+        dest=/etc/profile.d/rbenv.sh
+        owner=root group=root mode=0755
+  become: yes
+

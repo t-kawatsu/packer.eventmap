@@ -1,0 +1,10 @@
+---
+app:
+  parent_dir: "/var/lib/jogoj"
+
+rails:
+  version: 5.2.0.beta2
+
+epel_repo:
+  url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm"
+  gpg_key_url: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}"

@@ -1,0 +1,6 @@
+---
+- name: bundler インストール
+  shell: /bin/bash -lc "rbenv exec gem install bundler && rbenv rehash"
+  when:
+    - ruby_selected.rc != 0
+  become: yes

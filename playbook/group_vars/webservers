@@ -1,0 +1,5 @@
+---
+hostname: app.eventmap.jogoj.com
+
+app:
+  parent_dir: "/var/lib/jogoj"

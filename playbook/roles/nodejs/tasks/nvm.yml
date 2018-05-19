@@ -1,0 +1,47 @@
+---
+- name: nvm 依存パッケージをインストール
+  yum: name={{ item }} state=present
+  with_items:
+    - git
+    - gcc
+    - gcc-c++
+    - make
+    - openssl-devel
+    - libselinux-python
+  become: yes
+
+- name: "nvm リポジトリをチェックアウト {{ nvm.root }}"
+  git: repo={{ nvm.repo }}
+       dest={{ nvm.root }}
+       version={{ nvm.version }}
+       accept_hostkey=yes
+       force=yes
+  become: yes
+
+- name: nvm add initialization to profile system-wide
+  template: > 
+    src=etc/profile.d/nvm.sh.j2
+    dest=/etc/profile.d/nvm.sh
+    owner=root 
+    group=root 
+    mode=0755
+  become: yes
+
+- name: nvm アップデート
+  shell: git pull origin master && git checkout `git describe --abbrev=0 --tags`
+  args:
+    chdir: "{{ nvm.root }}"
+  become: yes
+
+- name: "nvm {{ nvm.group }}グループ存在確認"
+  group: name={{ nvm.group }} state=present gid={{ nvm.gid }}
+  become: yes
+
+- name: nvm オーナーとグループの変更
+  file: path={{ nvm.root }}
+        owner=root
+        group={{ nvm.group }}
+        mode="u=rwx,g=rwx,o=rx"
+        recurse=yes
+  become: yes
+

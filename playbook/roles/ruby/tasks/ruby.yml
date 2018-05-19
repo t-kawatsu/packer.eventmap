@@ -1,0 +1,43 @@
+---
+- name: ruby 依存パッケージをインストール
+  yum: state=present name={{ item }}
+  with_items:
+    - gcc
+    - bzip2
+    - zlib
+    - zlib-devel
+    - openssl
+    - openssl-devel
+    - readline-devel
+    - libffi-devel
+    - libyaml-devel
+  become: yes
+
+- name: "ruby {{ rbenv.ruby_version }} がインストール済みかどうか確認"
+  shell: /bin/bash -lc "rbenv versions | grep {{ rbenv.ruby_version }}"
+  register: ruby_installed
+  changed_when: false
+  ignore_errors: yes
+  check_mode: no
+  become: yes
+
+- name: "ruby {{ rbenv.ruby_version }} インストール"
+  shell: /bin/bash -lc "CONFIGURE_OPTS='--disable-install-rdoc' rbenv install {{ rbenv.ruby_version }}"
+  when:
+    - ruby_installed.rc != 0
+  become: yes
+
+- name: "ruby 現在のバージョンが {{ rbenv.ruby_version }} かどうか確認"
+  shell: /bin/bash -lc "rbenv version | cut -d ' ' -f 1 | grep -Fx '{{ rbenv.ruby_version }}'"
+  register: ruby_selected
+  changed_when: false
+  ignore_errors: yes
+  check_mode: no
+  become: yes
+
+- name: "ruby バージョンを {{ rbenv.ruby_version }} に設定"
+  shell: /bin/bash -lc "rbenv global {{ rbenv.ruby_version }} && rbenv rehash"
+  when:
+    - ruby_selected.rc != 0
+  become: yes
+

@@ -1,0 +1,81 @@
+---
+#
+postgresql_version: 10
+postgresql_encoding: 'UTF-8'
+
+postgresql_locale_parts:
+  - 'ja_JP' # Locale
+  - 'UTF-8' # Encoding
+postgresql_locale: "{{ postgresql_locale_parts | join('.') }}"
+
+postgresql_admin_user: "postgres"
+
+postgresql_service_user: "{{ postgresql_admin_user }}"
+postgresql_service_group: "{{ postgresql_admin_user }}"
+
+postgresql_cluster_reset: false
+
+
+# List of databases to be created (optional)
+postgresql_databases:
+  - { name: 'jogoj-hp' }
+
+# List of database extensions to be created (optional)
+postgresql_database_extensions: []
+
+# List of users to be created (optional)
+postgresql_users:
+  - { name: jogoj, pass: 'jogoj-pass', encrypted: true }
+
+# List of user privileges to be applied (optional)
+postgresql_user_privileges: []
+#  - { name: jogoj, db: postgres, priv: ALL, role_attr_flags: LOGIN,INHERIT }
+#  - { name: jogoj, db: postgres, priv: ALL, role_attr_flags: LOGIN,INHERIT }
+
+
+# pg_hba.conf
+postgresql_pg_hba:
+  - { type: local, database: 'jogoj-hp', user: jogoj, address: '', method: md5, comment: '' }
+  - { type: host,  database: 'jogoj-hp', user: jogoj, address: samehost, method: md5, comment: 'IPv4 local connections:' }
+  - { type: local, database: sameuser, user: all, address: '', method: trust, comment: '' }
+  - { type: host,  database: sameuser, user: all, address: samehost, method: trust, comment: 'IPv4 local connections:' }
+
+
+# Location of postgres configuration files here
+postgresql_conf_directory: "/var/lib/pgsql/{{postgresql_version}}/data"
+# HBA (Host Based Authentication) file
+postgresql_hba_file: "{{postgresql_conf_directory}}/pg_hba.conf"
+# Ident configuration file
+postgresql_ident_file: "{{postgresql_conf_directory}}/pg_ident.conf"
+# Use data in another directory
+postgresql_data_directory: "/var/lib/pgsql/{{ postgresql_version }}/data"
+postgresql_pid_directory: "/var/run/postgresql"
+# If external_pid_file is not explicitly set, on extra PID file is written
+postgresql_external_pid_file: "{{ postgresql_pid_directory }}/{{postgresql_version}}-{{postgresql_cluster_name}}.pid"
+
+
+# PGTUNE
+# Should we run pgtune and accept the changes it proposes?
+postgresql_pgtune: no
+# Total system memory in bytes, will attempt to detect if set to "no"
+postgresql_pgtune_memory: no
+# Database type, valid options are DW, OLTP, Web, Mixed, Desktop
+postgresql_pgtune_type: Mixed
+# Maximum number of expected connections, if "no", default based on db type
+postgresql_pgtune_connections: no
+
+
+postgresql_env:
+  LC_ALL: "{{ postgresql_locale }}"
+  LC_LCTYPE: "{{ postgresql_locale }}"
+
+
+postgresql_service_name: "postgresql-{{ postgresql_version }}"
+postgresql_bin_directory: "/usr/pgsql-{{postgresql_version}}/bin"
+
+
+# Yum settings
+postgresql_version_terse: "{{ postgresql_version | replace('.', '') }}"
+postgresql_yum_repository_base_url: "https://download.postgresql.org"
+postgresql_yum_repository_url: "{{ postgresql_yum_repository_base_url }}/pub/repos/yum/{{ postgresql_version }}/{{ ansible_os_family | lower }}/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}/pgdg-{{ ansible_distribution | lower }}{{ postgresql_version_terse }}-{{ postgresql_version }}-2.noarch.rpm"
+
